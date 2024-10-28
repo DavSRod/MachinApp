@@ -56,7 +56,6 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return <h1>Algo salió mal. Intente actualizar la página.</h1>;
     }
-
     return this.props.children;
   }
 }
@@ -71,6 +70,8 @@ export const FormFichaDeMantenimiento = () => {
     control,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -83,6 +84,7 @@ export const FormFichaDeMantenimiento = () => {
       mant_costo_final: "",
       fk_tipo_mantenimiento: "",
       fk_solicitud_mantenimiento: "",
+      mant_maquina: "",
       tecnico: "",
       repuestos: [{ nombreRepuesto: "", costo: "" }],
     },
@@ -95,24 +97,27 @@ export const FormFichaDeMantenimiento = () => {
 
   const [tiposMantenimiento, setTiposMantenimiento] = useState([]);
   const [solicitudes, setSolicitudes] = useState([]);
+  const [maquinas, setMaquinas] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [fileError, setFileError] = useState(null);
+
+  const [noMaquinasMensaje, setNoMaquinasMensaje] = useState("");
+
+  const selectedSolicitud = watch("fk_solicitud_mantenimiento");
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const tiposMantenimientoRes = await axiosCliente.get(
-          "tipomantenimiento/listar"
-        );
-        setTiposMantenimiento(tiposMantenimientoRes.data || []);
+        const [tiposMantenimientoRes, solicitudesRes] = await Promise.all([
+          axiosCliente.get("tipomantenimiento/listar"),
+          axiosCliente.get("/solicitud/")
+        ]);
 
-        const solicitudesRes = await axiosCliente.get(
-          "/solicitud/"
-        );
+        setTiposMantenimiento(tiposMantenimientoRes.data || []);
         setSolicitudes(solicitudesRes.data || []);
       } catch (error) {
         console.error("Error al obtener datos:", error);
@@ -124,6 +129,36 @@ export const FormFichaDeMantenimiento = () => {
 
     fetchData();
   }, [t]);
+
+useEffect(() => {
+  const fetchMaquinas = async () => {
+    if (selectedSolicitud) {
+      try {
+        const response = await axiosCliente.get(
+          `/mantenimiento/maquinas/solicitud/${selectedSolicitud}`
+        );
+        if (response.data.length === 0) {
+          setNoMaquinasMensaje("Solicitud seleccionada no tiene máquinas registradas");
+          setMaquinas([]);
+        } else {
+          setNoMaquinasMensaje("");
+          setMaquinas(response.data);
+        }
+        setValue("mant_maquina", "");
+      } catch (error) {
+        console.error("Error al obtener máquinas:", error);
+        setMaquinas([]);
+        setNoMaquinasMensaje("Error al cargar máquinas"); // Mensaje en caso de error
+      }
+    } else {
+      setMaquinas([]);
+      setNoMaquinasMensaje(""); // Limpiamos el mensaje si no hay solicitud seleccionada
+    }
+  };
+
+  fetchMaquinas();
+}, [selectedSolicitud, setValue]);
+
 
   const onSubmit = async (data) => {
     setIsLoading(true);
@@ -143,6 +178,7 @@ export const FormFichaDeMantenimiento = () => {
       formData.append("fk_tipo_mantenimiento", data.fk_tipo_mantenimiento);
       formData.append("fk_solicitud_mantenimiento", data.fk_solicitud_mantenimiento);
       formData.append("fk_tecnico", data.tecnico);
+      formData.append("mant_maquina", data.mant_maquina);
 
       const response = await axiosCliente.post(
         "mantenimiento/registrar",
@@ -169,6 +205,7 @@ export const FormFichaDeMantenimiento = () => {
         );
 
         toast.success(t("registration_success"));
+        reset();
         navigate('/historial');
       } else {
         throw new Error(t("no_maintenance_id_received"));
@@ -220,7 +257,7 @@ export const FormFichaDeMantenimiento = () => {
               </h2>
             </div>
             <div className="w-1/4 text-right">
-              <p className="text-sm">{t("management_center")}</p>
+              <p className="text-sm">Centro de Gestión y Desarrollo Sostenible Surcolombiano</p>
             </div>
           </div>
 
@@ -330,7 +367,7 @@ export const FormFichaDeMantenimiento = () => {
                           key={tipo.idTipo_mantenimiento}
                           value={tipo.idTipo_mantenimiento.toString()}
                         >
-                          {tipo.tipo_mantenimiento || t("no_maintenance_type")}
+                          {t(tipo.tipo_mantenimiento) || t("no_maintenance_type")}
                         </Radio>
                       ))
                     ) : (
@@ -395,7 +432,7 @@ export const FormFichaDeMantenimiento = () => {
                 render={({ field }) => (
                   <Select
                     {...field}
-                    placeholder={t("seleccione una solicitud pendiente")}
+                    placeholder={t("seleccione_solicitud_pendiente")}
                     aria-label="solicitudes-mantenimiento"
                   >
                     {solicitudes.map((solicitud) => (
@@ -403,73 +440,101 @@ export const FormFichaDeMantenimiento = () => {
                         key={solicitud.idSolicitud}
                         value={solicitud.soli_descripcion_problemas.toString()}
                       >
+                        
                         {`${solicitud.soli_descripcion_problemas}`}
                       </SelectItem>
                     ))}
                   </Select>
                 )}
               />
-            </CardStyle>
+              </CardStyle>
+
+              <CardStyle
+                titleCard={t("machine")}
+                className="p-6 shadow-md rounded-lg"
+              >
+                <Controller
+                  name="mant_maquina"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      placeholder={t("select_machine")}
+                      aria-label="maquinas"
+                      isDisabled={!selectedSolicitud}
+                    >
+                      {maquinas.map((maquina) => (
+                        <SelectItem
+                          key={maquina.id_maquina}
+                          value={maquina.id_maquina.toString()}
+                        >
+                          {maquina.referencia_maquina}
+                        </SelectItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+              </CardStyle>
           </div>
 
           <CardStyle
-            titleCard={t("parts_used_and_costs")}
-            className="mt-8 p-6 shadow-md rounded-lg"
+          titleCard={t("parts_used_and_costs")}
+          className="mt-8 p-6 shadow-md rounded-lg"
           >
-            <div className="flex justify-end mb-4">
-              <Button
-                color="primary"
-                onClick={() => append({ nombreRepuesto: "", costo: "" })}
-              >
-                <PlusIcon className="h-5 w-5 mr-2" aria-hidden="true" />
-                {t("add_part")}
-              </Button>
-            </div>
-            <Table aria-label={t("parts_table")}>
-              <TableHeader>
-                <TableColumn>{t("part_name")}</TableColumn>
-                <TableColumn>{t("cost")}</TableColumn>
-                <TableColumn>{t("actions")}</TableColumn>
-              </TableHeader>
-              <TableBody>
-                {fields.map((item, index) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <InputforForm
-                        register={register}
-                        errors={errors}
-                        name={`repuestos.${index}.nombreRepuesto`}
-                        tipo="text"
-                        placeholder={t("part_name")}
-                        label={t("part_name")}
+          <div className="flex justify-end mb-4">
+            <Button
+              color="primary"
+              onClick={() => append({ nombreRepuesto: "", costo: "" })}
+            >
+              <PlusIcon className="h-5 w-5 mr-2" aria-hidden="true" />
+              {t("add_part")}
+            </Button>
+          </div>
+          <Table aria-label={t("parts_table")}>
+            <TableHeader>
+              <TableColumn>{t("part_name")}</TableColumn>
+              <TableColumn>{t("cost")}</TableColumn>
+              <TableColumn>{t("actions")}</TableColumn>
+            </TableHeader>
+            <TableBody>
+              {fields.map((item, index) => (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <InputforForm
+                      register={register}
+                      errors={errors}
+                      name={`repuestos.${index}.nombreRepuesto`}
+                      tipo="text"
+                      placeholder={t("part_name")}
+                      label={t("part_name")}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <InputforForm
+                      register={register}
+                      maxLength={9}
+                      errors={errors}
+                      name={`repuestos.${index}.costo`}
+                      tipo="number"
+                      placeholder={t("cost")}
+                      label={t("cost")}
+                      min="0"
+                      step="0.01"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Button color="error" onClick={() => remove(index)}>
+                      <TrashIcon
+                        className="h-5 w-5 mr-2"
+                        aria-hidden="true"
                       />
-                    </TableCell>
-                    <TableCell>
-                      <InputforForm
-                        register={register}
-                        maxLength={9}
-                        errors={errors}
-                        name={`repuestos.${index}.costo`}
-                        tipo="number"
-                        placeholder={t("cost")}
-                        label={t("cost")}
-                        min="0"
-                        step="0.01"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Button color="error" onClick={() => remove(index)}>
-                        <TrashIcon
-                          className="h-5 w-5 mr-2"
-                          aria-hidden="true"
-                        />
-                        {t("delete")}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      {t("delete")}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
           </CardStyle>
 
           <Button
@@ -480,10 +545,9 @@ export const FormFichaDeMantenimiento = () => {
           >
             {isLoading ? t("registering") : t("register_maintenance")}
           </Button>
-
-          {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
-        </form>
-      </ErrorBoundary>
-    </div>
-  );
-};
+        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+      </form>
+    </ErrorBoundary>
+  </div>
+);
+}

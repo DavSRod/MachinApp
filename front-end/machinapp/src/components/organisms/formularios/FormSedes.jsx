@@ -1,8 +1,11 @@
 import { ButtonNext, InputforForm, TextAreaComponent, multiFormData } from "../../../index.js";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { FaUpload } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
+import { AuthContext } from "../../../contexts/AuthContext.jsx";
+import { toast } from "react-toastify";
 
 export const FormSedes = () => {
   const [previewImagen, setPreviewImagen] = useState(null);
@@ -13,6 +16,8 @@ export const FormSedes = () => {
     handleSubmit,
   } = useForm();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { rol } = useContext(AuthContext);
 
   const handleSubmitData = async (data) => {
     const dataSede = {
@@ -34,11 +39,10 @@ export const FormSedes = () => {
         "POST"
       );
 
-      alert("Se registró con éxito la sede")
-
-      navigate("/Sedes")
+      alert(t("exito_registro")); // Usar traducción
+      navigate("/Sedes");
     } catch (error) {
-      alert("Error al registrar nueva sede");
+      alert(t("error_al_registrar")); // Usar traducción
       console.log(error);
     }
   };
@@ -54,6 +58,12 @@ export const FormSedes = () => {
     }
   };
 
+  if (rol !== "Administrador") {
+    toast.error("Acceso denegado. Solo los administradores pueden acceder a este apartado.");
+    navigate("/Sedes"); 
+    return null;
+  }
+
   return (
     <>
       <form
@@ -61,7 +71,7 @@ export const FormSedes = () => {
         className="bg-white shadow-lg border rounded-lg w-full mx-auto"
       >
         <header className="bg-gradient-to-r from-green-400 to-green-600 h-24 flex justify-center items-center rounded-t-lg">
-          <h1 className="text-3xl font-bold text-white">Registrar nueva Sede</h1>
+          <h1 className="text-3xl font-bold text-white">{t("registrar_nueva_sede")}</h1>
         </header>
 
         <div className="flex flex-col w-full mt-8 items-center justify-center">
@@ -77,10 +87,10 @@ export const FormSedes = () => {
             )}
           </div>
 
-          <h2 className="mt-5 text-xl font-semibold">Imagen de la Sede</h2>
+          <h2 className="mt-5 text-xl font-semibold">{t("imagen_de_la_sede")}</h2>
           <label className="mt-2 w-64 flex flex-col items-center px-4 py-2 bg-green-500 text-white rounded-lg shadow-md tracking-wide uppercase border border-green-600 cursor-pointer hover:bg-green-600">
             <FaUpload className="text-xl" />
-            <span className="mt-2 text-base leading-normal">Seleccionar archivo</span>
+            <span className="mt-2 text-base leading-normal">{t("seleccionar_archivo")}</span>
             <input
               type="file"
               onChange={handleFileUpload}
@@ -94,7 +104,7 @@ export const FormSedes = () => {
 
           <div className="w-3/4 mt-8 p-2 bg-gray-50 rounded-lg shadow-md">
             <h2 className="mt-5 text-2xl font-semibold text-center text-gray-700">
-              Información de la Sede
+              {t("informacion_de_la_sede")}
             </h2>
 
             <div className="grid grid-cols-2 gap-6 mt-4">
@@ -103,67 +113,67 @@ export const FormSedes = () => {
                 register={register}
                 tipo={"text"}
                 name={"Nombre_del_centro"}
-                label={"Nombre del centro"}
+                label={t("nombre_del_centro")}
               />
               <InputforForm
                 errors={errors}
                 register={register}
                 tipo={"text"}
                 name={"Nombre_de_la_sede"}
-                label={"Nombre de la sede"}
+                label={t("nombre_de_la_sede")}
               />
               <InputforForm
                 errors={errors}
                 register={register}
                 tipo={"text"}
                 name={"Regional"}
-                label={"Regional"}
+                label={t("regional")}
               />
               <InputforForm
                 errors={errors}
                 register={register}
                 tipo={"text"}
                 name={"Municipio"}
-                label={"Municipio"}
+                label={t("municipio")}
               />
               <InputforForm
                 errors={errors}
                 register={register}
                 tipo={"text"}
                 name={"Direccion"}
-                label={"Dirección"}
+                label={t("direccion")}
               />
               <InputforForm
                 errors={errors}
                 register={register}
                 tipo={"text"}
                 name={"Subdirector"}
-                label={"Subdirector"}
+                label={t("subdirector")}
               />
               <InputforForm
                 errors={errors}
                 register={register}
                 tipo={"text"}
                 name={"Contacto"}
-                label={"Contacto de la Sede"}
+                label={t("contacto")}
               />
             </div>
           </div>
 
           <div className="w-3/4 p-2 mt-8">
-            <h2 className="text-xl font-semibold">Descripción de la Sede</h2>
+            <h2 className="text-xl font-semibold">{t("descripcion_de_la_sede")}</h2>
             <TextAreaComponent
               errors={errors}
               register={register}
               name={"Descripcion"}
-              descripcion={"Descripción de la Sede"}
+              descripcion={t("descripcion_de_la_sede")}
               className="mt-4 p-3 h-32 border rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
           <div className="pb-5">
             <ButtonNext
               color="success"
-              text="Registrar sede"
+              text={t("registrar_sede")}
               type="submit"
             />
           </div>
@@ -172,3 +182,5 @@ export const FormSedes = () => {
     </>
   );
 };
+
+export default FormSedes;

@@ -27,6 +27,7 @@ import {
 
 } from "../../index.js"
 import { useTranslation } from "react-i18next"
+import { FaLeaf } from "react-icons/fa"
 
 
 export const InfoMaquina = () => {
@@ -42,18 +43,22 @@ export const InfoMaquina = () => {
   const { rol } = useContext(AuthContext)
   const isAdmin = rol === "Administrador"
 
+
   /* estado para la img */
+
 
   const [estadoInfo ,setEstadoInfo] =useState(false)
 
     const buscarInfo = async ()=>{
         try{
             const response = await axiosCliente.get(`ficha/listarInfoEspecifica/${idMaquina}`)
+            
             setInfoMaquina(response.data)
             setEstadoInfo(true)
 
+
         }catch(error){
-            toast.error(error.response.data.mensaje)
+            toast.error(error?.response?.data?.mensaje)
         }
     }
 
@@ -78,9 +83,9 @@ export const InfoMaquina = () => {
     }
 
     useEffect(()=>{
-        
         buscarInfo()
         buscarInfoMantenimientos()
+
     }, [idMaquina])
 
     /* Configuracion de la tabla de mantenimientos */
@@ -131,11 +136,14 @@ export const InfoMaquina = () => {
     const handleEdit =()=>{
         navigate(`/listarFichaTecnica/${idMaquina}`)
     }
+
+
     
   return (
     <>
       <Layout titlePage={`${maquina.tipoEquipo}`}>
         <Breadcrumb pageName={`${maquina.tipoEquipo}`} />
+        
 
         <div className=" flex justify-center flex-row flex-wrap pt-12 gap-8 mt-11 mb-20 pb-16  border-b-2 border-b-green-600 h-auto">
           <div className="w-[480px] flex-1 ">

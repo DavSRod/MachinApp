@@ -18,7 +18,7 @@ import { toast } from 'react-toastify';
 import { V, InputUpdate, axiosCliente, SelectComponent, ButtonNext, CardStyle, TextAreaComponent } from "../../../index.js";
 
 export const FormSolicitudesUpdate = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(); 
   const { id } = useParams();
   const navigate = useNavigate();
   
@@ -154,7 +154,7 @@ export const FormSolicitudesUpdate = () => {
           </div>
           <div className="flex-shrink-0 w-1/3 h-full border flex items-center">
             <p className="overflow-hidden overflow-ellipsis text-center">
-              {t("management_center")}
+            Centro de Gestión y Desarrollo Sostenible Surcolombiano
             </p>
           </div>
         </div>

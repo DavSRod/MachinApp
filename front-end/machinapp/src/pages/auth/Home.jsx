@@ -75,8 +75,7 @@ export const Home = () => {
                     link={
                       <>
                         {rol === "Administrador" ? (
-                          // <Link to={value.link}>Ver</Link>
-                            <p>.</p>
+                           <Link to={value.link}>{t("view")}</Link>
                         ) : (
                           " "
                         )}

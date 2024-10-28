@@ -1,42 +1,77 @@
-
-import { ButtonNext, InputforForm, TextAreaComponent} from "../../../index.js";
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { ButtonNext, InputUpdate, TextAreaComponent } from "../../../index.js";
+import { useState, useEffect, useContext } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { multiFormData } from "../../../utils/formData.js";
 import { FaUpload } from "react-icons/fa";
 import { axiosCliente } from "../../../service/api/axios.js";
-import { useTranslation } from "react-i18next"; // Importar el hook de traducción
+import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
+import { AuthContext } from "../../../contexts/AuthContext.jsx";
 
 export const FormSedesUpdate = () => {
-  const { t } = useTranslation(); // Usar el hook de traducción
+  const { t } = useTranslation();
   const [previewImagen, setPreviewImagen] = useState(null);
   const [imagen, setImagen] = useState(null);
-  const { id } = useParams(); // Obtener el ID de la sede desde los params
-  const { register, formState: { errors }, handleSubmit, setValue } = useForm();
+  const [isLoading, setIsLoading] = useState(true);
+  const { id } = useParams();
+  const { rol } = useContext(AuthContext);
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    register,
+    formState: { errors }
+  } = useForm();
+
+  const formValues = watch();
+  useEffect(() => {
+    console.log("Valores actuales del formulario:", formValues);
+  }, [formValues]);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSedeData = async () => {
+      setIsLoading(true);
       try {
         const response = await axiosCliente.get(`sede/listarsede/${id}`);
-        const sedeData = response.data.resultadoSede;
+        // La respuesta viene como un array, tomamos el primer elemento
+        const sedeData = response.data.resultadoSede[0];
         
-        // Asignar los valores actuales al formulario
-        setValue("Nombre_del_centro", sedeData.sede_nombre_centro);
-        setValue("Nombre_de_la_sede", sedeData.sede_nombre);
-        setValue("Regional", sedeData.sede_regional);
-        setValue("Municipio", sedeData.sede_municipio);
-        setValue("Direccion", sedeData.sede_direccion);
-        setValue("Subdirector", sedeData.sede_subdirector);
-        setValue("Contacto", sedeData.contacto);
-        setValue("Descripcion", sedeData.sede_descripcion);
+        console.log("Respuesta de sede:", response.data.resultadoSede);
+        
+        if (sedeData) {
+          console.log("Estableciendo valores de la sede:", {
+            nombre_centro: sedeData.sede_nombre_centro,
+            nombre_sede: sedeData.sede_nombre,
+            regional: sedeData.sede_regional,
+            municipio: sedeData.sede_municipio,
+            direccion: sedeData.sede_direccion,
+            subdirector: sedeData.sede_subdirector,
+            contacto: sedeData.contacto,
+            descripcion: sedeData.sede_descripcion
+          });
 
-        if (sedeData.img) {
-          setPreviewImagen(`${import.meta.env.VITE_API_IMAGE}imagenes/${sedeData.img}`);
+          // Asignar los valores actuales al formulario
+          setValue("Nombre_del_centro", sedeData.sede_nombre_centro);
+          setValue("Nombre_de_la_sede", sedeData.sede_nombre);
+          setValue("Regional", sedeData.sede_regional);
+          setValue("Municipio", sedeData.sede_municipio);
+          setValue("Direccion", sedeData.sede_direccion);
+          setValue("Subdirector", sedeData.sede_subdirector);
+          setValue("Contacto", sedeData.contacto);
+          setValue("Descripcion", sedeData.sede_descripcion);
+
+          if (sedeData.img_sede) {
+            setPreviewImagen(`${import.meta.env.VITE_API_IMAGE}imagenes/${sedeData.img_sede}`);
+          }
         }
       } catch (error) {
         console.error(t("error.fetch_data"), error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -44,6 +79,7 @@ export const FormSedesUpdate = () => {
   }, [id, setValue, t]);
 
   const handleSubmitData = async (data) => {
+    console.log("Datos enviados:", data); // Debug
     const dataSede = {
       sede_nombre_centro: data.Nombre_del_centro,
       sede_nombre: data.Nombre_de_la_sede,
@@ -81,6 +117,16 @@ export const FormSedesUpdate = () => {
       setPreviewImagen(null);
     }
   };
+
+  if (isLoading) {
+    return <div>Cargando...</div>;
+  }
+
+  if (rol !== "Administrador") {
+    toast.error("Acceso denegado. Solo los administradores pueden acceder a este apartado.");
+    navigate("/Sedes"); 
+    return null;
+  }
 
   return (
     <>
@@ -126,55 +172,104 @@ export const FormSedesUpdate = () => {
             </h2>
 
             <div className="grid grid-cols-2 gap-6 mt-4">
-              <InputforForm
-                errors={errors}
-                register={register}
-                tipo={"text"}
-                name={"Nombre_del_centro"}
-                label={t('center_name')}
+              <Controller
+                name="Nombre_del_centro"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputUpdate
+                    {...field}
+                    label={t('center_name')}
+                    tipo="text"
+                    errors={errors}
+                    isUpdating={true}
+                  />
+                )}
               />
-              <InputforForm
-                errors={errors}
-                register={register}
-                tipo={"text"}
-                name={"Nombre_de_la_sede"}
-                label={t('sede_name')}
+              <Controller
+                name="Nombre_de_la_sede"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputUpdate
+                    {...field}
+                    label={t('sede_name')}
+                    tipo="text"
+                    errors={errors}
+                    isUpdating={true}
+                  />
+                )}
               />
-              <InputforForm
-                errors={errors}
-                register={register}
-                tipo={"text"}
-                name={"Regional"}
-                label={"Regional"}
+              <Controller
+                name="Regional"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputUpdate
+                    {...field}
+                    label="Regional"
+                    tipo="text"
+                    errors={errors}
+                    isUpdating={true}
+                  />
+                )}
               />
-              <InputforForm
-                errors={errors}
-                register={register}
-                tipo={"text"}
-                name={"Municipio"}
-                label={t('municipality')}
+              <Controller
+                name="Municipio"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputUpdate
+                    {...field}
+                    label={t('municipality')}
+                    tipo="text"
+                    errors={errors}
+                    isUpdating={true}
+                  />
+                )}
               />
-              <InputforForm
-                errors={errors}
-                register={register}
-                tipo={"text"}
-                name={"Direccion"}
-                label={t('address')}
+              <Controller
+                name="Direccion"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputUpdate
+                    {...field}
+                    label={t('address')}
+                    tipo="text"
+                    errors={errors}
+                    isUpdating={true}
+                  />
+                )}
               />
-              <InputforForm
-                errors={errors}
-                register={register}
-                tipo={"text"}
-                name={"Subdirector"}
-                label={t('subdirector')}
-              />   
-              <InputforForm
-                errors={errors}
-                register={register}
-                tipo={"text"}
-                name={"Contacto"}
-                label={t('contact')}
-              />     
+              <Controller
+                name="Subdirector"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputUpdate
+                    {...field}
+                    label={t('subdirector')}
+                    tipo="text"
+                    errors={errors}
+                    isUpdating={true}
+                  />
+                )}
+              />
+              <Controller
+                name="Contacto"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputUpdate
+                    {...field}
+                    label={t('contact')}
+                    tipo="text"
+                    errors={errors}
+                    isUpdating={true}
+                  />
+                )}
+              />
             </div>
           </div>
 
@@ -183,7 +278,7 @@ export const FormSedesUpdate = () => {
             <TextAreaComponent
               errors={errors}
               register={register}
-              name={"Descripcion"}
+              name="Descripcion"
               className="mt-4 p-3 h-32 border rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>

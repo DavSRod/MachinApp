@@ -57,7 +57,7 @@ const InfoDetalladaAmbiente = () => {
             <thead className="bg-green-600">
               <tr>
                 <th className="px-4 py-2 font-semibold text-gray-800">{t('campo_ambiente')}</th>
-                <th className="px-4 py-2 font-semibold text-gray-800">{t('valor_ambiente')}</th>
+                <th className="px-4 py-2 font-semibold text-gray-800">{t('valor_sede')}</th>
               </tr>
             </thead>
             <tbody>

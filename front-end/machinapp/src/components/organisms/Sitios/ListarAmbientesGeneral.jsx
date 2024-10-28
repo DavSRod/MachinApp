@@ -40,8 +40,8 @@ const handleDownloadClick = (idAmbiente) => {
     t("tipo_aula"),
     t("area"),
     t("profesor_encargado"),
-    "Estado", // Nueva columna para el estado
-    "Acciones",
+    t("estado"), // Nueva columna para el estado
+    t("acciones"),
   ];
 
   const obtenerAreasUnicas = () => {
@@ -162,7 +162,7 @@ afas
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Sitios</h1>
+      <h1 className="text-2xl font-bold mb-4">{t("sitios")}</h1>
       <div className="flex flex-col mb-4 gap-6">
         <div className="flex flex-row justify-end gap-6">
           <ButtonNext className={`${V.bg_sena_verde} ${V.text_white}`}   startContent={<Icons icon={V.PlusIcon} />} >
@@ -184,7 +184,7 @@ afas
         <div className="flex flex-row gap-6">
         <SearchComponent
           onSearch={filtrarAmbientes}
-          label={`${t("nombre_aula")} ${t("tipo_aula")}, ${t("area")}, ${t("profesor_encargado")}`}
+          label={`${t("tipo_aula")}, ${t("area")}, ${t("profesor_encargado")}`}
         />
 
         <Select

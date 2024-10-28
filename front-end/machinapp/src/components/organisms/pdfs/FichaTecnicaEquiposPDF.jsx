@@ -20,7 +20,6 @@ export const FichaTecnicaEquiposPDF = ({idMaquina}) => {
     const [varObligatorias, setVarObligatorias] = useState({})
     
 
-
     useEffect(()=>{
 
         const informacionMaquina   = async () =>{

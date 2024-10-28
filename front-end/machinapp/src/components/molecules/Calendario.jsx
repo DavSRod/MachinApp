@@ -3,7 +3,6 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
-import esLocale from '@fullcalendar/core/locales/es';
 import { axiosCliente } from "../../index";
 
 export const Calendario = () => {
@@ -44,13 +43,13 @@ export const Calendario = () => {
       <FullCalendar
         plugins={[dayGridPlugin, listPlugin, interactionPlugin]}
         initialView="dayGridMonth"
-        locale={esLocale}
         height={750}
         headerToolbar={{
           start: '', 
           center: 'title',
           end: 'today dayGridMonth prev,next'
         }}
+        timeZone='local'
         events={events}
         dateClick={handleDateClick}
         ref={(calendarRef) => {

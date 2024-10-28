@@ -84,15 +84,7 @@ export const Maquinas = () => {
                   {t("RegistrarTipoFicha")} <Icons icon={PlusIcon} />
                 </Link>
               </Button>
-  
-              <Button type="suc" className="text-white text-base bg-yellow-400 ml-4">
-                <Link
-                  to={"/editarTiposFichaTec"}
-                  className="flex gap-2 justify-center items-center h-full w-full"
-                >
-                  {t('EditarTipoFicha')}<Icons icon={PencilSquareIcon} />
-                </Link>
-              </Button>
+
             </div>
   
             <Button type="suc" className="text-white text-base bg-green-600">

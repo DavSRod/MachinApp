@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { axiosCliente } from "../../../index.js";
+import { useTranslation } from "react-i18next";
 
 
 const styles = StyleSheet.create({
@@ -212,6 +213,7 @@ const TableRow = ({ item, index }) => (
 // eslint-disable-next-line react/prop-types
 export const PDFSolicitud = ({idSolicitud}) => {
   const [data, setData] = useState({});
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -258,19 +260,19 @@ export const PDFSolicitud = ({idSolicitud}) => {
         </View>
 
         <View style={styles.applicantInfo}>
-          <Text style={styles.infoTitle}>Información de Solicitante</Text>
+          <Text style={styles.infoTitle}>{t("applicant_information")}</Text>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Nombre del Solicitante:</Text>
+            <Text style={styles.infoLabel}>{t("name_of_applicant")}:</Text>
             <Text style={styles.infoInput}>{data.nombre_solicitante}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Correo del Solicitante:</Text>
+            <Text style={styles.infoLabel}>{t("applicants_email")}:</Text>
             <Text style={styles.infoInput}>{data.correo_solicitante}</Text>
           </View>
         </View>
 
         <View style={styles.prioritySection}>
-        <Text style={styles.sectionTitle}>Prioridad</Text>
+        <Text style={styles.sectionTitle}>{t("Priority")}</Text>
           <View style={styles.priorityItem}>
             <View style={[styles.checkbox, data.soli_prioridad === 'inmediata' && { backgroundColor: 'black' }]} />
             <Text style={styles.priorityText}>Immediate</Text>
@@ -285,12 +287,12 @@ export const PDFSolicitud = ({idSolicitud}) => {
           </View>
         </View>
 
-        {renderSection('Descripción de la Solicitud', data.soli_descripcion_problemas)}
-        {renderSection('Parte Legal', data.temas_legal)}
-        {renderSection('Observaciones', data.soli_observaciones)}
+        {renderSection(t("Description_of_the_Request"), data.soli_descripcion_problemas)}
+        {renderSection(t("Legal_Part"), data.temas_legal)}
+        {renderSection(t("Observations"), data.soli_observaciones)}
 
         <View style={styles.costSection}>
-          <Text style={styles.costLabel}>COSTO DE REPARACIÓN $</Text>
+          <Text style={styles.costLabel}>{t("cost")} $</Text>
           <View style={styles.costInput}>
             <Text>{data.soli_costo_estimado || ''}</Text>
           </View>

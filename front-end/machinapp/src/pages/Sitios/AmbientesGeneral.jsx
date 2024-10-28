@@ -6,7 +6,7 @@ export const AmbientesGeneral = () => {
 
   return (
     <Layout>
-      <Breadcrumb pageName={t("ambientesGeneral")} />
+      <Breadcrumb pageName={t("ambiente1")} />
       <BuscarAmbientesGeneral />
     </Layout>
   );

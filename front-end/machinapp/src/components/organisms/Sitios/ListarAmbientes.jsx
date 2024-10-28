@@ -36,7 +36,7 @@ export const BuscarAmbientes = ({ idArea }) => {
     <div className='bg-gray-200 min-h-screen'>
       <header className={`py-16 shadow-md top-0 z-10 ${V.bg_sena_verde}`}>
         <h1 className='text-4xl font-extrabold text-center text-white'>
-          {t('titulo_principal')} {/* Usar la traducción para el título */}
+        Centro de Gestión y Desarrollo Sostenible Surcolombiano
         </h1>
         <p className='text-center text-white mt-6 mx-4 md:mx-0'>
           {t('descripcion_centro')} {/* Usar la traducción para la descripción */}

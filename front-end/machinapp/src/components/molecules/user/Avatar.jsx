@@ -13,6 +13,9 @@ import {
 export const AvatarCom = () => {
   const { logout, user, loading } = useAuth();
   const { t } = useTranslation();
+   const capitalizarPrimeraLetra = (str) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
 
   const ItemsDrop = [
     <>
@@ -50,7 +53,7 @@ export const AvatarCom = () => {
               isBordered: true,
             }}
             name={
-              loading ? t("loading") : `${user.us_nombre} ${user.us_apellidos}`
+              loading ? t("loading") : `${capitalizarPrimeraLetra(user.us_nombre)} ${capitalizarPrimeraLetra(user.us_apellidos)}`
             }
           />
         }

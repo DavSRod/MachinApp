@@ -50,6 +50,8 @@ export const AppRouter = () => {
           <Route path="*" element={<Page404 />} />
           <Route path="/" element={<Inicio />} />
           <Route path="/recuperar" element={<ResetPassword />} />
+          <Route path="/infoMaquina/:idMaquina" element={<InfoMaquina />} />
+
 
           <Route element={<ProtectedRoute />}>
             <Route element={<ProtegerRutasAdminInstru />}>
@@ -66,6 +68,7 @@ export const AppRouter = () => {
               <Route path="/editar/solicitud/:id" element={<UpdateFormFichaSolicitud/>}/>
                <Route path="/editarTiposFichaTec" element={<ViewFormTipoFichaUpdate/>}/>
                <Route path="/TipoSitio/Registrar" element={<RegistrarTipoSitio />} />
+              <Route path="/listarFichaTecnica/:idMaquina" element={<UpdateAndListFichaTecnica />} />
             </Route>
             <Route path="/home" element={<Home />} />
             <Route path="/perfil/*" element={<PerfilRoutes />} />
@@ -86,10 +89,10 @@ export const AppRouter = () => {
             <Route path="/Ambientes/InfoAmbiente/:idAmbientes" element={<InfoAmbiente />}  />
             <Route path="/Areas" element={<AreasGeneral />} />
             <Route path="/Ambientes" element={<AmbientesGeneral />} />
-            <Route path="/listarFichaTecnica/:idMaquina" element={<UpdateAndListFichaTecnica />} />
+
 
           </Route>
-          <Route path="/infoMaquina/:idMaquina" element={<InfoMaquina />} />
+
 
         </Routes>
       </Suspense>

@@ -49,9 +49,9 @@ export const FormFichaSolicitud = () => {
   } = useForm();
 
   const prioridad = [
-    { name: "inmediata", descripcion: "" },
-    { name: "urgente", descripcion: "" },
-    { name: "normal", descripcion: "" },
+    { name: "inmediata", descripcion: "", tra : t("inmediata") },
+    { name: "urgente", descripcion: "" ,tra : t("urgente")  },
+    { name: "normal", descripcion: "",  tra : t("normal")  },
   ];
 
   // enviar datos al servidor
@@ -185,7 +185,7 @@ export const FormFichaSolicitud = () => {
             </div>
             <div className="flex-shrink-0 w-1/3 h-full border flex items-center">
               <p className="overflow-hidden overflow-ellipsis text-center">
-                {t("management_center")}
+              Centro de Gestión y Desarrollo Sostenible Surcolombiano
               </p>
             </div>
           </div>
@@ -223,7 +223,7 @@ export const FormFichaSolicitud = () => {
                 name="prioridad"
                 placeholder={t("priority")}
                 valueKey="name"
-                textKey="name"
+                textKey="tra"
                 register={register}
                 label={t("priority")}
               />
@@ -276,7 +276,7 @@ export const FormFichaSolicitud = () => {
                   tipo={"number"}
                   name={"costo_estimado"}
                   register={register}
-                  label={"costo"}
+                  label={t("cost")}
                 />
               </div>
             </div>{" "}

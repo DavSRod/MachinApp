@@ -8,6 +8,9 @@ import multer from 'multer'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import dotenv from "dotenv"
+dotenv.config({ path: 'env/.env' })
+
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
@@ -68,7 +71,7 @@ export const registrarFicha = async(req, res)=>{
 
             let id = respuesta.insertId  //id de la ficha creada
 
-            let data = `http://10.193.144.26:5173/infoMaquina/${id}`   //poner la url que queramos.
+            let data = `${process.env.ID_PORT}infoMaquina/${id}`   //poner la url que queramos.
             let folderPath = 'public/QRimagenes'; //ruta de donde se va a guardar
             let filePath = `${folderPath}/${id}-qr.png`     //le pasamos la ruta y en nombre de como se va a crear la imagen. 
             

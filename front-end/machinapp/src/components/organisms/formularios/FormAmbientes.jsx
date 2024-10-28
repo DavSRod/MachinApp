@@ -6,15 +6,18 @@ import {
   axiosCliente,
   useGlobalData,
 } from "../../../index.js";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useForm } from "react-hook-form";
 import { FaUpload } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../../contexts/AuthContext.jsx";
 
 export const FormAmbientes = () => {
   const { t } = useTranslation();
-  
+  const { rol } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [areas, setAreas] = useState([]);
   const [tipositios, setTipositios] = useState([]);
   const [previewImagen, setPreviewImagen] = useState(null);
@@ -94,6 +97,12 @@ export const FormAmbientes = () => {
     };
     fetchData();
   }, []);
+
+  if (rol !== "Administrador") {
+    toast.error("Acceso denegado. Solo los administradores pueden acceder a este apartado.");
+    navigate("/Ambientes"); 
+    return null;
+  }
 
   return (
     <form

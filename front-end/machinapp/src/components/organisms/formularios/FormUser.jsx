@@ -98,14 +98,14 @@ export const FormUser = () => {
         <div className="flex flex-col">
           <SelectComponent
             options={[
-              { name: "cedula de ciudadania" },
-              { name: "tarjeta identidad" },
-              { name: "cedula extranjeria" },
+              { name: "cedula de ciudadania", tra : t("cedula_ciudadania") },
+              { name: "tarjeta identidad", tra : t("tarjeta_identidad")  },
+              { name: "cedula extranjeria" , tra : t("cedula_extranjeria")},
             ]}
             name="tipo_documento"
             placeholder={t("tipo_documento")}
             valueKey="name"
-            textKey="name"
+            textKey="tra"
             register={register}
             label={t("tipo_documento")}
           />

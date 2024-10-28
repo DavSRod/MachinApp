@@ -8,7 +8,6 @@ import {
   multiFormData,
   ButtonNext,
   slepp,
-  tipoDocumentoData,
 } from "../../../index";
 
 import { useForm, Controller } from "react-hook-form";
@@ -314,12 +313,17 @@ export const FormUserUpdate = ({ userData }) => {
                     <>
                       <div className="w-full sm:w-1/2 flex justify-center items-center">
                         <SelectComponent
-                          options={tipoDocumentoData}
+                          options={[
+                              {value: "cedula de ciudadania", tra: t("cedula_ciudadania")},
+                              {value: "tarjeta identidad", tra: t("tarjeta_identidad")},
+                              {value: "cedula extranjeria", tra: t("cedula_extranjeria")},
+
+                          ]}
                           name="tipo_documento"
                           placeholder={t("tipo_documento")}
                           valueKey="value"
                           value={false}
-                          textKey="view"
+                          textKey="tra"
                           register={register}
                           label={t("tipo_documento")}
                         />

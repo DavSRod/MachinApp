@@ -1,28 +1,41 @@
-import { ButtonNext, InputforForm, SelectComponent } from "../../../index.js";
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { ButtonNext, InputUpdate, SelectComponent } from "../../../index.js";
+import { useState, useEffect, useContext } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { multiFormData } from "../../../utils/formData.js";
 import { FaUpload } from "react-icons/fa";
 import { axiosCliente } from "../../../service/api/axios.js";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
+import { AuthContext } from "../../../contexts/AuthContext.jsx";
 
 export const FormAreasUpdate = () => {
   const { t } = useTranslation();
   const [sedes, setSedes] = useState([]);
   const [previewImagen, setPreviewImagen] = useState(null);
   const [imagen, setImagen] = useState(null);
-  const [areaData, setAreaData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { id } = useParams();
+  const { rol } = useContext(AuthContext);
   const {
-    register,
-    formState: { errors },
+    control,
     handleSubmit,
-    reset,
+    setValue,
+    watch,
+    register,
+    formState: { errors }
   } = useForm();
+
+  // Para debug - observar todos los valores del formulario
+  const formValues = watch();
+  useEffect(() => {
+    console.log("Valores actuales del formulario:", formValues);
+  }, [formValues]);
+  
   const navigate = useNavigate();
 
   const handleSubmitData = async (data) => {
+    console.log("Datos enviados:", data); // Debug
     const dataArea = {
       area_nombre: data.Nombre_del_area,
       area_fk_sedes: data.sede,
@@ -57,36 +70,60 @@ export const FormAreasUpdate = () => {
 
   useEffect(() => {
     const fetchSedesAndArea = async () => {
+      setIsLoading(true);
       try {
         const [sedeResponse, areaResponse] = await Promise.all([
           axiosCliente.get("sede/listarsede"),
           axiosCliente.get(`area/listararea/${id}`),
         ]);
 
+        // Debug - ver las respuestas
+        console.log("Respuesta del área:", areaResponse.data);
+        console.log("Respuesta de sedes:", sedeResponse.data);
+
         const sedeArray = sedeResponse.data.resultadoSede.map((sede) => ({
           id: sede.idSede,
-          nombre: sede.sede_nombre,
+          valor: sede.sede_nombre,
         }));
 
         setSedes(sedeArray);
-        setAreaData(areaResponse.data);
-        reset({
-          Nombre_del_area: areaResponse.data.area_nombre,
-          sede: areaResponse.data.area_fk_sedes,
-        });
+        
+        // Obtener los datos del área y establecer los valores
+        const areaData = areaResponse.data.resultadoArea[0]; // Accedemos al primer elemento del array
+        if (areaData) {
+          console.log("Estableciendo valores del área:", {
+            nombre: areaData.area_nombre,
+            sede: areaData.idSede
+          });
 
-        if (areaResponse.data.img) {
-          setPreviewImagen(
-            `${import.meta.env.VITE_API_IMAGE}imagenes/${areaResponse.data.img}`
-          );
+          setValue("Nombre_del_area", areaData.area_nombre);
+          setValue("sede", areaData.idSede?.toString());
+
+          if (areaData.img_area) {
+            setPreviewImagen(
+              `${import.meta.env.VITE_API_IMAGE}imagenes/${areaData.img_area}`
+            );
+          }
         }
       } catch (error) {
         console.error("Error: ", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchSedesAndArea();
-  }, [id, reset]);
+  }, [id, setValue]);
+
+  if (isLoading) {
+    return <div>Cargando...</div>;
+  }
+
+  if (rol !== "Administrador") {
+    toast.error("Acceso denegado. Solo los administradores pueden acceder a este apartado.");
+    navigate("/Areas"); 
+    return null;
+  }
 
   return (
     <>
@@ -140,21 +177,41 @@ export const FormAreasUpdate = () => {
             </h2>
 
             <div className="grid grid-cols-2 gap-6 mt-4">
-              <InputforForm
-                errors={errors}
-                register={register}
-                tipo={"text"}
-                name={"Nombre_del_area"}
-                label={t("area_name")}
+              <Controller
+                name="Nombre_del_area"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputUpdate
+                    {...field}
+                    label={t("area_name")}
+                    tipo="text"
+                    errors={errors}
+                    isUpdating={true}
+                  />
+                )}
               />
-              <SelectComponent
-                options={sedes}
+              
+              <Controller
                 name="sede"
-                placeholder={t("select_sede")}
-                valueKey="id"
-                textKey="nombre"
-                register={register}
-                label={t("sede_area")}
+                control={control}
+                defaultValue=""
+                render={({ field: { onChange, value, name } }) => (
+                  <SelectComponent
+                    options={sedes}
+                    placeholder={t("select_sede")}
+                    valueKey="id"
+                    textKey="valor"
+                    label={t("sede_area")}
+                    value={value}
+                    name={name}
+                    register={() => register(name)}
+                    onChange={(e) => {
+                      console.log("Cambio en sede:", e.target.value);
+                      onChange(e.target.value);
+                    }}
+                  />
+                )}
               />
             </div>
           </div>

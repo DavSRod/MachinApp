@@ -46,9 +46,9 @@ export const ListarUsuarios = () => {
   // si envio 4 columnas debo tambien de enviarle 4 filas, de lo contrario nos arrojara un error
   const newArrayDataUser = dataUser.map((item) => ({
     nombre: capitalizarPrimeraLetra(item.us_nombre),
-    apellidos: item.us_apellidos,
+    apellidos: capitalizarPrimeraLetra(item.us_apellidos),
     correo: item.us_correo,
-    tipo_documento: item.us_tipo_documento,
+    tipo_documento: capitalizarPrimeraLetra(item.us_tipo_documento),
     numero_documento: item.us_numero_documento,
     rol:  capitalizarPrimeraLetra(item.rol_nombre),
   }));

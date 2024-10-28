@@ -55,7 +55,12 @@ export const useFetchSolicitud = () => {
     }
 
     useEffect(() => {
-        fetchDataSoliticitud()
+        const token = localStorage.getItem("token")
+
+        if (token){
+            fetchDataSoliticitud()
+        }
+
     }, []);
 
     return {

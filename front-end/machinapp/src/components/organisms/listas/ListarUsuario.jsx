@@ -27,6 +27,10 @@ export const BuscarUsuario = () => {
 
   const newUser = Object.entries(newd);
 
+    const capitalizarPrimeraLetra = (str) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
   return (
     <>
       <div className="px-5 flex justify-end">
@@ -80,7 +84,7 @@ export const BuscarUsuario = () => {
                         <div className="flex items-center gap-2">
                           <Icons icon={iconArray[key]} />
                           <span className="text-gray-700">
-                            {value || "No disponible"}
+                            {capitalizarPrimeraLetra(value) || "No disponible"}
                           </span>
                         </div>
                       </label>
