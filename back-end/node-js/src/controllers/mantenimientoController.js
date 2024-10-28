@@ -59,10 +59,10 @@ export const registrarMantenimiento = async (req, res) => {
       mant_costo_final,
       fk_tipo_mantenimiento,
       fk_solicitud_mantenimiento,
-      fk_tecnico
+      fk_tecnico,
+      mant_maquina
     } = req.body;
 
-    // Extraer solo el nombre del archivo, sin la ruta "public/pdfs/"
     const mant_ficha_soporte = req.file ? path.basename(req.file.path) : null;
 
     const sql = `
@@ -76,8 +76,9 @@ export const registrarMantenimiento = async (req, res) => {
         mant_ficha_soporte,
         mant_costo_final,
         fk_solicitud_mantenimiento,
-        fk_tecnico
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        fk_tecnico,
+        mant_maquina
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const [resultado] = await conexion.query(sql, [
       mant_codigo_mantenimiento,
@@ -89,7 +90,8 @@ export const registrarMantenimiento = async (req, res) => {
       mant_ficha_soporte,
       mant_costo_final,
       fk_solicitud_mantenimiento,
-      fk_tecnico
+      fk_tecnico,
+      mant_maquina
     ]);
 
     if (resultado.affectedRows > 0) {
@@ -308,14 +310,14 @@ export const actualizarMantenimiento = async (req, res) => {
       mant_codigo_mantenimiento,
       mant_estado,
       mant_fecha_proxima,
-      man_fecha_realizacion,
       mant_descripcion,
       mant_costo_final,
       fk_tipo_mantenimiento,
       fk_solicitud_mantenimiento,
+      mant_maquina
     } = req.body;
 
-    const mant_ficha_soporte = req.file ? req.file.path : null;
+    const mant_ficha_soporte = req.file ? path.basename(req.file.path) : null;
 
     const { idMantenimiento } = req.params;
 
@@ -324,22 +326,22 @@ export const actualizarMantenimiento = async (req, res) => {
         mant_codigo_mantenimiento = ?,
         mant_estado = ?,
         mant_fecha_proxima = ?,
-        man_fecha_realizacion = ?,
         fk_tipo_mantenimiento = ?,
         mant_descripcion = ?,
         mant_costo_final = ?,
-        fk_solicitud_mantenimiento = ?
+        fk_solicitud_mantenimiento = ?,
+        mant_maquina = ?
     `;
 
     const params = [
       mant_codigo_mantenimiento,
       mant_estado,
       mant_fecha_proxima,
-      man_fecha_realizacion,
       fk_tipo_mantenimiento,
       mant_descripcion,
       mant_costo_final,
       fk_solicitud_mantenimiento,
+      mant_maquina
     ];
 
     if (mant_ficha_soporte) {
@@ -468,6 +470,46 @@ export const listarMantenimientoPorId = async (req, res) => {
   }
 };
 
+
+export const listarMaquinasPorSolicitud = async (req, res) => {
+  try {
+    const { idSolicitud } = req.params;
+
+    const sql = `
+      SELECT DISTINCT
+        fme.fi_placa_sena AS referencia_maquina,
+        fme.idFichas AS id_maquina
+      FROM
+        solicitud_mantenimiento sm
+      LEFT JOIN
+        solicitud_has_fichas shf ON sm.idSolicitud = shf.fk_solicitud
+      LEFT JOIN
+        fichas_maquinas_equipos fme ON shf.fk_fichas = fme.idFichas
+      WHERE
+        sm.idSolicitud = ?
+    `;
+
+    const [result] = await conexion.query(sql, [idSolicitud]);
+
+    if (result.length > 0) {
+      const maquinas = result.map((row) => ({
+        referencia_maquina: row.referencia_maquina,
+        id_maquina: row.id_maquina
+      }));
+
+      res.status(200).json(maquinas);
+    } else {
+      res.status(404).json({
+        message: "No se encontraron máquinas para esa solicitud.",
+      });
+    }
+  } catch (err) {
+    console.error("Error en listarMaquinasPorSolicitud:", err);
+    res.status(500).json({
+      message: "Error en el controlador listarMaquinasPorSolicitud: " + err.message,
+    });
+  }
+};
 
 export const excelconsultavariables = async (req, res) => {
   try {

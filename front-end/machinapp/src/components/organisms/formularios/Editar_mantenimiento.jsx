@@ -10,13 +10,14 @@ import { Layout, CardStyle, InputUpdate, Breadcrumb, axiosCliente, TextAreaCompo
 
 export const Editar_Component = () => {
   const { t } = useTranslation();
+  
 
     // para poder obtener los tecnicos que nos trae el api
     const { dataUser } = useGlobalData();
 
   const { idMantenimiento } = useParams();
   const navigate = useNavigate();
-  const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
+  const { register, control, handleSubmit, reset, watch, formState: { errors } } = useForm({
     defaultValues: {
       mant_codigo_mantenimiento: '',
       mant_estado: '',
@@ -26,10 +27,11 @@ export const Editar_Component = () => {
       mant_costo_final: '',
       fk_tipo_mantenimiento: '',
       fk_solicitud_mantenimiento: '',
+      mant_maquina: '',
       repuestos: []
     }
   });
-
+  const watchedSolicitud = watch("fk_solicitud_mantenimiento");
   const { fields, append, remove } = useFieldArray({
     control,
     name: "repuestos"
@@ -37,6 +39,7 @@ export const Editar_Component = () => {
 
   const [tiposMantenimiento, setTiposMantenimiento] = useState([]);
   const [solicitudes, setSolicitudes] = useState([]);
+  const [maquinas, setMaquinas] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -62,15 +65,21 @@ export const Editar_Component = () => {
         ]);
         setTiposMantenimiento(tiposMantenimientoRes.data || []);
         setSolicitudes(solicitudesRes.data || []);
-
+  
         if (idMantenimiento) {
           const mantenimientoRes = await axiosCliente.get(`mantenimiento/listar_por_id/${idMantenimiento}`);
           const mantenimientoData = mantenimientoRes.data;
-       /*    console.log(mantenimientoData); */
-
+  
           if (mantenimientoData) {
+            // Cargar las máquinas de la solicitud actual
+            if (mantenimientoData.fk_solicitud_mantenimiento) {
+              const maquinasRes = await axiosCliente.get(`mantenimiento/maquinas/solicitud/${mantenimientoData.fk_solicitud_mantenimiento}`);
+              setMaquinas(maquinasRes.data || []);
+            }
+  
             setMantenimiento(mantenimientoData);
             reset({
+              ...mantenimientoData,
               mant_codigo_mantenimiento: mantenimientoData.codigo_mantenimiento || '',
               mant_estado: mantenimientoData.mant_estado || '',
               mant_fecha_proxima: formatDateForInput(mantenimientoData.mant_fecha_proxima) || '',
@@ -79,15 +88,16 @@ export const Editar_Component = () => {
               mant_costo_final: mantenimientoData.mant_costo_final || '',
               fk_tipo_mantenimiento: mantenimientoData.tipo_mantenimiento.idTipo_mantenimiento || '',
               fk_solicitud_mantenimiento: mantenimientoData.fk_solicitud_mantenimiento || '',
+              mant_maquina: mantenimientoData.mant_maquina?.toString() || '',  // Aseguramos que sea string
               tecnico: mantenimientoData.id_tecnico
             });
           }
-
+  
           const partesRes = await axiosCliente.get(`partes_mantenimiento/listar_por_idmantenimiento/${idMantenimiento}`);
           const partes = partesRes.data;
-
+  
           setPartesMantenimiento(partes);
-
+  
           if (Array.isArray(partes)) {
             reset(formValues => ({
               ...formValues,
@@ -106,9 +116,40 @@ export const Editar_Component = () => {
         setIsLoading(false);
       }
     };
-
+  
     fetchData();
-  }, [t, idMantenimiento, reset]);
+  }, [idMantenimiento, reset]);
+
+  useEffect(() => {
+    const fetchMaquinas = async () => {
+      if (watchedSolicitud) {
+        try {
+          const response = await axiosCliente.get(`mantenimiento/maquinas/solicitud/${watchedSolicitud}`);
+          setMaquinas(response.data || []);
+          
+          if (response.data && response.data.length === 1) {
+            const maquinaId = response.data[0].id_maquina.toString();
+            reset(formValues => ({
+              ...formValues,
+              mant_maquina: maquinaId
+            }));
+          }
+        } catch (error) {
+          console.error("Error al obtener máquinas:", error);
+          setMaquinas([]);
+        }
+      } else {
+        setMaquinas([]);
+        reset(formValues => ({
+          ...formValues,
+          mant_maquina: ''
+        }));
+      }
+    };
+  
+    fetchMaquinas();
+  }, [watchedSolicitud, reset]);
+  
 
   const onSubmit = async (data) => {
     setIsLoading(true);
@@ -346,10 +387,43 @@ export const Editar_Component = () => {
                   valueKey="id"
                   textKey="valor"
                   label={t("maintenance_request")}
+                  onChange={(newValue) => {
+                    onChange(newValue);
+                    // Limpiar la máquina seleccionada cuando cambia la solicitud
+                    reset(formValues => ({
+                      ...formValues,
+                      mant_maquina: '',
+                      fk_solicitud_mantenimiento: newValue
+                    }));
+                  }}
+                  value={value}
+                  name={name}
+                  register={() => ({ onChange, value, name, ref })}
+                />
+              )}
+            />
+          </CardStyle>
+            
+                    <CardStyle titleCard={t("machine")} className="p-6 shadow-md rounded-lg">
+            <Controller
+              name="mant_maquina"
+              control={control}
+              defaultValue=""
+              render={({ field: { onChange, value, name, ref } }) => (
+                <SelectComponent
+                  options={maquinas.map(maquina => ({
+                    id: maquina.id_maquina,
+                    valor: maquina.referencia_maquina
+                  }))}
+                  placeholder={maquinas.length > 0 ? t("enter_machine") : t("select_request_first")}
+                  valueKey="id"
+                  textKey="valor"
+                  label={t("machine")}
                   onChange={onChange}
                   value={value}
                   name={name}
                   register={() => ({ onChange, value, name, ref })}
+                  disabled={!control._formValues.fk_solicitud_mantenimiento}
                 />
               )}
             />
