@@ -355,5 +355,7 @@
     "preventivo": "Preventivo",
   "correctivo": "Correctivo",
   "programado": "Programado",
-   "seleccione_solicitud_pendiente": "Seleccione una solicitud pendiente"
+   "seleccione_solicitud_pendiente": "Seleccione una solicitud pendiente",
+  "machine": "Maquina relacionada con la solicitud",
+  "select_machine": "Selecciona una maquina relacionada con la solicitud"
 }

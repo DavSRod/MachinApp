@@ -359,5 +359,7 @@
    "preventivo": "Preventive",
   "correctivo": "Corrective",
   "programado": "Scheduled",
-   "seleccione_solicitud_pendiente": "Select a pending request"
+   "seleccione_solicitud_pendiente": "Select a pending request",
+  "machine": "Machine related to the request",
+  "select_machine": "Select a machine related to the request"
 }
